@@ -3,6 +3,24 @@ import { ExternalLink, FolderGit, Database, Layout, Lock } from "lucide-react";
 
 const projects = [
   {
+    title: "AI Sales Page Generator",
+    description:
+      "A full-stack AI-powered web application that transforms product information into complete, persuasive sales pages instantly.",
+    longDescription:
+      "Built with Next.js and Groq API (Llama 3.3 70B). Features include user authentication, AI-generated structured sales pages, live preview, edit and regenerate, history management, and HTML export. Deployed on Vercel with PostgreSQL on Neon.tech.",
+    tags: [
+      "Next.js",
+      "Groq AI",
+      "Prisma",
+      "PostgreSQL",
+      "NextAuth.js",
+      "Tailwind CSS",
+    ],
+    icon: <Sparkles className="w-5 h-5" />,
+    link: "https://ai-sales-generator.vercel.app",
+    github: "https://github.com/ignasiusberneo/ai-sales-generator",
+  },
+  {
     title: "Asyifa Hiperbarik - Clinic Management",
     description:
       "An integrated healthcare platform managing patient registration, medical records, and automated pharmacy inventory.",
