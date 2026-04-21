@@ -1,5 +1,12 @@
 "use client";
-import { ExternalLink, FolderGit, Database, Layout, Lock } from "lucide-react";
+import {
+  ExternalLink,
+  FolderGit,
+  Database,
+  Layout,
+  Lock,
+  Sparkles,
+} from "lucide-react";
 
 const projects = [
   {
