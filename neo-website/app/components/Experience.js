@@ -1,4 +1,6 @@
+"use client";
 import { ChevronRight } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 const experiences = [
   {
@@ -43,45 +45,102 @@ const experiences = [
   },
 ];
 
-export default function Experience() {
-  return (
-    <section id="experience" className="w-full py-24 px-6">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex items-center gap-4 mb-12">
-          <span className="font-serif font-bold text-sm tracking-widest text-[#d4af37]">
-            03
-          </span>
-          <div className="h-px flex-1 bg-gradient-to-r from-[#d4af37] to-transparent"></div>
-          <h2 className="font-serif font-bold text-3xl text-[#e8e8e8]">
-            Experience
-          </h2>
-        </div>
+function useScrollAnimation(threshold = 0.1) {
+  const ref = useRef(null);
 
-        <div className="relative pl-8 border-l-2 border-[#d4af37]/25 space-y-12">
-          {experiences.map((exp, i) => (
-            <div key={i} className="relative">
-              <div className="absolute -left-[calc(2rem+6px)] w-3 h-3 rounded-full bg-[#d4af37] top-2 shadow-[0_0_10px_#d4af37]"></div>
-              <div className="p-6 rounded-xl border border-[#d4af37]/10 bg-[#d4af37]/5 hover:bg-[#d4af37]/10 transition-colors">
-                <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#d4af37]/15 text-[#d4af37]">
-                  {exp.period}
-                </span>
-                <h3 className="text-xl font-bold mt-3 text-[#e8e8e8]">
-                  {exp.role}
-                </h3>
-                <p className="text-[#d4af37] text-sm mb-4">{exp.company}</p>
-                <ul className="space-y-2 text-sm text-[#a0a0a0]">
-                  {exp.points.map((p, j) => (
-                    <li key={j} className="flex gap-2">
-                      <ChevronRight className="w-4 h-4 text-[#d4af37] flex-shrink-0 mt-0.5" />
-                      <span>{p}</span>
-                    </li>
-                  ))}
-                </ul>
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.querySelectorAll("[data-animate]").forEach((el, i) => {
+              setTimeout(() => el.classList.add("animate-in"), i * 150);
+            });
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold },
+    );
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [threshold]);
+
+  return ref;
+}
+
+export default function Experience() {
+  const sectionRef = useScrollAnimation();
+
+  return (
+    <>
+      <style>{`
+        [data-animate] {
+          opacity: 0;
+          transform: translateX(-24px);
+          transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1),
+                      transform 0.6s cubic-bezier(0.22,1,0.36,1);
+        }
+        [data-animate].animate-in {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        .timeline-dot {
+          opacity: 0;
+          transform: scale(0);
+          transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .timeline-dot.animate-in {
+          opacity: 1;
+          transform: scale(1);
+        }
+      `}</style>
+
+      <section id="experience" ref={sectionRef} className="w-full py-24 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-center gap-4 mb-12" data-animate>
+            <span className="font-serif font-bold text-sm tracking-widest text-[#d4af37]">
+              03
+            </span>
+            <div className="h-px flex-1 bg-gradient-to-r from-[#d4af37] to-transparent" />
+            <h2 className="font-serif font-bold text-3xl text-[#e8e8e8]">
+              Experience
+            </h2>
+          </div>
+
+          <div className="relative pl-8 border-l-2 border-[#d4af37]/25 space-y-12">
+            {experiences.map((exp, i) => (
+              <div key={i} className="relative">
+                <div
+                  className="timeline-dot absolute -left-[calc(2rem+6px)] w-3 h-3 rounded-full bg-[#d4af37] top-2 shadow-[0_0_10px_#d4af37]"
+                  data-animate
+                />
+                <div
+                  className="p-6 rounded-xl border border-[#d4af37]/10 bg-[#d4af37]/5 hover:bg-[#d4af37]/10 transition-colors"
+                  data-animate
+                >
+                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#d4af37]/15 text-[#d4af37]">
+                    {exp.period}
+                  </span>
+                  <h3 className="text-xl font-bold mt-3 text-[#e8e8e8]">
+                    {exp.role}
+                  </h3>
+                  <p className="text-[#d4af37] text-sm mb-4">{exp.company}</p>
+                  <ul className="space-y-2 text-sm text-[#a0a0a0]">
+                    {exp.points.map((p, j) => (
+                      <li key={j} className="flex gap-2">
+                        <ChevronRight className="w-4 h-4 text-[#d4af37] flex-shrink-0 mt-0.5" />
+                        <span>{p}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }
