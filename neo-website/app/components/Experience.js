@@ -1,6 +1,14 @@
 "use client";
+
 import { ChevronRight } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+// Daftarkan plugin GSAP
+gsap.registerPlugin(ScrollTrigger);
 
 const experiences = [
   {
@@ -45,102 +53,146 @@ const experiences = [
   },
 ];
 
-function useScrollAnimation(threshold = 0.1) {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.querySelectorAll("[data-animate]").forEach((el, i) => {
-              setTimeout(() => el.classList.add("animate-in"), i * 150);
-            });
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold },
-    );
-
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [threshold]);
-
-  return ref;
-}
-
 export default function Experience() {
-  const sectionRef = useScrollAnimation();
+  const containerRef = useRef(null);
+  const headerLineRef = useRef(null);
+  const timelineLineRef = useRef(null);
+
+  // Deteksi reveal viewport untuk header menggunakan Framer Motion
+  const isHeaderInView = useInView(containerRef, { once: true, amount: 0.1 });
+
+  useGSAP(
+    () => {
+      // 1. Animasi horizontal garis header
+      gsap.fromTo(
+        headerLineRef.current,
+        { width: "0%" },
+        {
+          width: "100%",
+          duration: 1.2,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "top 85%",
+          },
+        },
+      );
+
+      // 2. Animasi vertikal garis TIMELINE (Mencerminkan skill ScrollTrigger, Pinning, Scrubbing)
+      gsap.fromTo(
+        timelineLineRef.current,
+        { scaleY: 0 },
+        {
+          scaleY: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".timeline-container",
+            start: "top 70%", // Mulai tumbuh saat container berada di 70% tinggi layar
+            end: "bottom 75%", // Selesai tumbuh penuh saat bagian bawah container di 75% layar
+            scrub: 0.5, // Mengikat panjang garis secara real-time dengan scrollwheel (smooth!)
+          },
+        },
+      );
+    },
+    { scope: containerRef },
+  );
 
   return (
-    <>
-      <style>{`
-        [data-animate] {
-          opacity: 0;
-          transform: translateX(-24px);
-          transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1),
-                      transform 0.6s cubic-bezier(0.22,1,0.36,1);
-        }
-        [data-animate].animate-in {
-          opacity: 1;
-          transform: translateX(0);
-        }
-        .timeline-dot {
-          opacity: 0;
-          transform: scale(0);
-          transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
-        }
-        .timeline-dot.animate-in {
-          opacity: 1;
-          transform: scale(1);
-        }
-      `}</style>
+    <section
+      id="experience"
+      ref={containerRef}
+      className="w-full py-24 px-6 overflow-hidden"
+    >
+      <div className="max-w-5xl mx-auto">
+        {/* HEADER SECTION */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isHeaderInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="flex items-center gap-4 mb-12"
+        >
+          <span className="font-serif font-bold text-sm tracking-widest text-[#d4af37]">
+            03
+          </span>
+          <div
+            ref={headerLineRef}
+            className="h-px bg-gradient-to-r from-[#d4af37] to-transparent"
+          />
+          <h2 className="font-serif font-bold text-3xl text-[#e8e8e8] whitespace-nowrap">
+            Experience
+          </h2>
+        </motion.div>
 
-      <section id="experience" ref={sectionRef} className="w-full py-24 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center gap-4 mb-12" data-animate>
-            <span className="font-serif font-bold text-sm tracking-widest text-[#d4af37]">
-              03
-            </span>
-            <div className="h-px flex-1 bg-gradient-to-r from-[#d4af37] to-transparent" />
-            <h2 className="font-serif font-bold text-3xl text-[#e8e8e8]">
-              Experience
-            </h2>
-          </div>
+        {/* TIMELINE CONTAINER */}
+        <div className="timeline-container relative pl-8">
+          {/* Garis Dasar Berwarna Redup (Aksen Awal) */}
+          <div className="absolute left-0 top-2 bottom-2 w-0.5 bg-[#d4af37]/10" />
 
-          <div className="relative pl-8 border-l-2 border-[#d4af37]/25 space-y-12">
+          {/* Garis Aktif yang Diisi Dinamis oleh GSAP ScrollTrigger */}
+          <div
+            ref={timelineLineRef}
+            className="absolute left-0 top-2 bottom-2 w-0.5 bg-gradient-to-b from-[#d4af37] to-[#d4af37]/40 origin-top"
+          />
+
+          {/* LIST PENGALAMAN */}
+          <div className="space-y-12">
             {experiences.map((exp, i) => (
-              <div key={i} className="relative">
-                <div
-                  className="timeline-dot absolute -left-[calc(2rem+6px)] w-3 h-3 rounded-full bg-[#d4af37] top-2 shadow-[0_0_10px_#d4af37]"
-                  data-animate
-                />
-                <div
-                  className="p-6 rounded-xl border border-[#d4af37]/10 bg-[#d4af37]/5 hover:bg-[#d4af37]/10 transition-colors"
-                  data-animate
-                >
-                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#d4af37]/15 text-[#d4af37]">
-                    {exp.period}
-                  </span>
-                  <h3 className="text-xl font-bold mt-3 text-[#e8e8e8]">
-                    {exp.role}
-                  </h3>
-                  <p className="text-[#d4af37] text-sm mb-4">{exp.company}</p>
-                  <ul className="space-y-2 text-sm text-[#a0a0a0]">
-                    {exp.points.map((p, j) => (
-                      <li key={j} className="flex gap-2">
-                        <ChevronRight className="w-4 h-4 text-[#d4af37] flex-shrink-0 mt-0.5" />
-                        <span>{p}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+              <TimelineCard key={i} exp={exp} index={i} />
             ))}
           </div>
         </div>
-      </section>
-    </>
+      </div>
+    </section>
+  );
+}
+
+// Sub-komponen terpisah agar penanganan useInView per kartu bekerja sempurna secara individu
+function TimelineCard({ exp, index }) {
+  const cardRef = useRef(null);
+  const isCardInView = useInView(cardRef, { once: true, amount: 0.2 });
+
+  return (
+    <div ref={cardRef} className="relative">
+      {/* 1. Timeline Dot dengan Efek Pop-up Mengembang (Spring Physics) */}
+      <motion.div
+        initial={{ scale: 0, opacity: 0 }}
+        animate={isCardInView ? { scale: 1, opacity: 1 } : {}}
+        transition={{
+          type: "spring",
+          stiffness: 200,
+          damping: 12,
+          delay: 0.1,
+        }}
+        className="absolute -left-[calc(2rem+6px)] w-3 h-3 rounded-full bg-[#d4af37] top-2 shadow-[0_0_10px_#d4af37]"
+      />
+
+      {/* 2. Isi Kartu dengan Animasi Slide In dari Kiri (Transform GPU Accelerated) */}
+      <motion.div
+        initial={{ opacity: 0, x: -30 }}
+        animate={isCardInView ? { opacity: 1, x: 0 } : {}}
+        transition={{
+          duration: 0.7,
+          ease: [0.22, 1, 0.36, 1],
+          delay: 0.2,
+        }}
+        whileHover={{ x: 4, backgroundColor: "rgba(212, 175, 55, 0.08)" }}
+        className="p-6 rounded-xl border border-[#d4af37]/10 bg-[#d4af37]/5 hover:border-[#d4af37]/20 transition-colors duration-300 cursor-default"
+      >
+        <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#d4af37]/15 text-[#d4af37]">
+          {exp.period}
+        </span>
+        <h3 className="text-xl font-bold mt-3 text-[#e8e8e8]">{exp.role}</h3>
+        <p className="text-[#d4af37] text-sm mb-4">{exp.company}</p>
+
+        <ul className="space-y-2 text-sm text-[#a0a0a0]">
+          {exp.points.map((p, j) => (
+            <li key={j} className="flex gap-2">
+              <ChevronRight className="w-4 h-4 text-[#d4af37] flex-shrink-0 mt-0.5" />
+              <span>{p}</span>
+            </li>
+          ))}
+        </ul>
+      </motion.div>
+    </div>
   );
 }

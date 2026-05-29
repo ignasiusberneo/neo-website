@@ -1,26 +1,58 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Mode Terang (Default fallback) */
+  --background: #fafafa;
+  --foreground: #0a0a0f;
+  --color-gold: #d4af37;
 }
 
+/* Memaksa tema gelap menjadi tema utama portofoliomu */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0f; /* Disamakan dengan warna dasar komponen #0a0a0f */
+    --foreground: #e8e8e8; /* Putih pudar premium agar tidak perih di mata */
+  }
+}
+
+/* Konfigurasi Tema Tailwind CSS v4 */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  
+  /* Definisikan font serif mewah untuk judul-judul portofoliomu */
+  --font-serif: "Playfair Display", Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans: Arial, Helvetica, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Pengaturan Global Elemen HTML */
+html {
+  scroll-behavior: smooth; /* Wajib! Agar timeline GSAP tereksekusi mulus saat menu diklik */
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  overflow-x: hidden; /* Mencegah bug 'horizontal scrolling' akibat animasi slide-in GSAP/Framer */
+}
+
+/* Custom Scrollbar minimalis bernuansa emas (Opsional tapi meningkatkan estetika) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.2);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.4);
 }
